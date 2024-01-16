@@ -50,6 +50,25 @@ class HomeWidget {
     });
   }
 
+  /// Gets all the existing configurations of widgets
+  ///
+  /// Android not supported yet
+  ///
+  /// iOS will use `WidgetCenter.shared.getCurrentConfigurations`
+  /// 
+  static Future<Map<String, List<String>>> getCurrentConfigurations() async {
+    final dynamic result = await _channel.invokeMethod('getCurrentConfigurations');
+    if (result is Map<dynamic, dynamic>) {
+      return result.map((key, value) {
+        final String stringKey = key as String;
+        final List<String> stringList = List<String>.from(value as List);
+        return MapEntry(stringKey, stringList);
+      });
+    } else {
+      throw Exception('Error formatting result from getCurrentConfigurations');
+    }
+  }
+
   /// Determines whether pinning HomeScreen Widget is supported.
   static Future<bool?> isRequestPinWidgetSupported() {
     return _channel.invokeMethod('isRequestPinWidgetSupported');

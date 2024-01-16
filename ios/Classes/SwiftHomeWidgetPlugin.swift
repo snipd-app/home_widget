@@ -153,6 +153,41 @@ public class SwiftHomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandle
       result(false)
     } else if call.method == "requestPinWidget" {
       result(nil)
+    } else if call.method == "getCurrentConfigurations" {
+      if #available(iOS 14.0, *) {
+        WidgetCenter.shared.getCurrentConfigurations { data in
+            switch data {
+            case .success(let configurations):
+                var widgetConfigurations: [String: [String]] = [:] // Dictionary to hold configurations
+                
+                // Update the widget configurations dictionary with the current configurations
+                for configuration in configurations {
+                    let kind = configuration.kind
+                    let family = configuration.family.description
+                    
+                    // Insert or update the configuration date for this widget kind and family
+                    var families = widgetConfigurations[kind] ?? []
+                    families.append(family)
+                    widgetConfigurations[kind] = families
+                }
+                result(widgetConfigurations)
+                return
+            case .failure(let error):
+                result(FlutterError(
+                  code: "-6",
+                  message: "Unable to get current widget configurations",
+                  details: nil
+                ))
+                return
+            }
+        }
+      }
+      else {
+        result(
+          FlutterError(
+            code: "-4", message: "Widgets are only available on iOS 14.0 and above", details: nil)
+        )
+      }
     }
     else {
       result(FlutterMethodNotImplemented)
