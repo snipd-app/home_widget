@@ -56,8 +56,18 @@ class HomeWidget {
   ///
   /// iOS will use `WidgetCenter.shared.getCurrentConfigurations`
   /// 
-  static Future<Map<String, List<String>>> getCurrentConfigurations() async {
-    final dynamic result = await _channel.invokeMethod('getCurrentConfigurations');
+  static Future<Map<String, List<String>>> getCurrentConfigurations({
+    String? name,
+    String? androidName,
+    String? iOSName,
+    String? qualifiedAndroidName,
+  }) async {
+    final dynamic result = await _channel.invokeMethod('getCurrentConfigurations', {
+      'name': name,
+      'android': androidName,
+      'ios': iOSName,
+      'qualifiedAndroidName': qualifiedAndroidName,
+    });
     if (result is Map<dynamic, dynamic>) {
       return result.map((key, value) {
         final String stringKey = key as String;

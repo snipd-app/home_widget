@@ -139,6 +139,34 @@ class HomeWidgetPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     result.error("-4", "No Widget found with Name $className. Argument 'name' must be the same as your AppWidgetProvider you wish to update", classException)
                 }
             }
+            "getCurrentConfigurations" -> {
+                val resultData = mutableMapOf<String, Any>()
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    return result.success(resultData)
+                }
+
+                val qualifiedName = call.argument<String>("qualifiedAndroidName")
+                val className = call.argument<String>("android") ?: call.argument<String>("name")
+                try {
+                    val javaClass = Class.forName(qualifiedName ?: "${context.packageName}.${className}")
+                    val myProvider = ComponentName(context, javaClass)
+                    val appWidgetManager = AppWidgetManager.getInstance(context.applicationContext)
+                    
+                    val appWidgetIds = appWidgetManager.getAppWidgetIds(myProvider)
+                    resultData["${className}"] = appWidgetIds.map { widgetId ->
+                        val widgetInfo = appWidgetManager.getAppWidgetInfo(widgetId)
+                        when {
+                            widgetInfo.targetCellWidth <= 2 && widgetInfo.targetCellHeight <= 2 -> "systemSmall"
+                            widgetInfo.targetCellWidth <= 3 && widgetInfo.targetCellHeight <= 3 -> "systemMedium"
+                            widgetInfo.targetCellWidth >= 4 && widgetInfo.targetCellHeight >= 4 -> "systemLarge"
+                            else -> "unknown"
+                        }
+                    }
+                    result.success(resultData)
+                } catch (classException: ClassNotFoundException) {
+                    result.error("-5", "Unable to get current widget configuration", classException)
+                }
+            }
             else -> {
                 result.notImplemented()
             }
