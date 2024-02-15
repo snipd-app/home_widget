@@ -155,11 +155,15 @@ class HomeWidgetPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     val appWidgetIds = appWidgetManager.getAppWidgetIds(myProvider)
                     resultData["${className}"] = appWidgetIds.map { widgetId ->
                         val widgetInfo = appWidgetManager.getAppWidgetInfo(widgetId)
-                        when {
-                            widgetInfo.targetCellWidth <= 2 && widgetInfo.targetCellHeight <= 2 -> "systemSmall"
-                            widgetInfo.targetCellWidth <= 3 && widgetInfo.targetCellHeight <= 3 -> "systemMedium"
-                            widgetInfo.targetCellWidth >= 4 && widgetInfo.targetCellHeight >= 4 -> "systemLarge"
-                            else -> "unknown"
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            when {
+                                widgetInfo.targetCellWidth <= 2 && widgetInfo.targetCellHeight <= 2 -> "systemSmall"
+                                widgetInfo.targetCellWidth <= 3 && widgetInfo.targetCellHeight <= 3 -> "systemMedium"
+                                widgetInfo.targetCellWidth >= 4 && widgetInfo.targetCellHeight >= 4 -> "systemLarge"
+                                else -> "unknown"
+                            }
+                        } else {
+                            "unknown"
                         }
                     }
                     result.success(resultData)
